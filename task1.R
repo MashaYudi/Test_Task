@@ -2,12 +2,14 @@ library("xlsx")
 library("tidyverse")
 library("gridExtra")
 
-#set the level of significance for t-test(0.1, 0.05, 0.01)
+#set the level of significance for t-test
 alpha_t <- 0.1
 
 #set the path to data files
 #path <- readline(prompt="Enter source path: ")
-path <- "Lab/Test_Task/Sources/"
+
+## FULL PATH MAY BE NEEDED HERE
+path <- "/Sources/"
 filename1 <- "T_NOR_all.xlsx"
 filename2 <- "180223_T_aSyn3_animal_data.xlsx"
 
@@ -81,8 +83,11 @@ if(length(unique(t_test_table$strain.)) == 2){
   visits_res <- t.test(visits_diff ~ strain., t_test_table)
   duration_res <- t.test(duration_diff ~ strain., t_test_table)
   
-  print("T-test for number of visits:")
+  print("T-test for number of visits")
   print(visits_res)
+  
+  print("T-test for duration of visits")
+  print(duration_res)
   
   if(visits_res$p.value<alpha_t) {
     print("Number of visits: Difference is significant")
@@ -91,11 +96,6 @@ if(length(unique(t_test_table$strain.)) == 2){
     print("Number of visits: Difference is not significant")
     print(paste0("alpha = ", alpha_t, ", p-value = ",  visits_res$p.value))}
   
-  
-  print("T-test for duration of visits:")
-  print(duration_res)
-  
-
   if(duration_res$p.value<alpha_t) {
     print("Duration of visits: Difference is significant")
     print(paste0("alpha = ", alpha_t, ", p-value = ",  duration_res$p.value))
