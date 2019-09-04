@@ -1,7 +1,19 @@
-#setwd(getSrcDirectory()[1])
+library("xlsx")
+library("tidyverse")
+library("gridExtra")
+
+#set the level of significance for t-test(0.1, 0.05, 0.01)
+alpha_t <- 0.1
+
+#set the path to data files
+#path <- readline(prompt="Enter source path: ")
+path <- "Lab/Test_Task/Sources/"
+filename1 <- "T_NOR_all.xlsx"
+filename2 <- "180223_T_aSyn3_animal_data.xlsx"
+
 #load the data
-my_data <- read.xlsx2("Lab/Test_Task/Sources/T_NOR_all.xlsx", 1)
-my_data_strains <- read.xlsx2("Lab/Test_Task/Sources/180223_T_aSyn3_animal_data.xlsx", 1)
+my_data <- read.xlsx2(paste0(path, filename1), 1)
+my_data_strains <- read.xlsx2(paste0(path, filename2), 1)
 
 #select important columns
 # -- about novel oblect
@@ -49,22 +61,47 @@ t_test_table$Visits_block <- as.numeric(as.character(t_test_table$Visits_block))
 t_test_table$duration_diff <- t_test_table$Duration_ball - t_test_table$Duration_block
 t_test_table$visits_diff <- t_test_table$Visits_ball - t_test_table$Visits_block
 
+#checking if there's only two strains to test
+#only that case was considered
+if(length(unique(t_test_table$strain.)) == 2){
+  
+  #histograms for 2 new columns
+  # -- duration
+  p1 <- ggplot(t_test_table, aes(duration_diff)) +
+    geom_histogram(fill = "white", color = "grey30") +
+    facet_wrap(~ strain.)
+  # -- number of visits
+  p2 <- ggplot(t_test_table, aes(visits_diff)) +
+    geom_histogram(fill = "white", color = "grey30") +
+    facet_wrap(~ strain.) 
+  
+  grid.arrange(p1, p2, nrow = 2)
+  
+  #t-tests for duration and visits
+  visits_res <- t.test(visits_diff ~ strain., t_test_table)
+  duration_res <- t.test(duration_diff ~ strain., t_test_table)
+  
+  print("T-test for number of visits:")
+  print(visits_res)
+  
+  if(visits_res$p.value<alpha_t) {
+    print("Number of visits: Difference is significant")
+    print(paste0("alpha = ", alpha_t, ", p-value = ",  visits_res$p.value))
+  } else {
+    print("Number of visits: Difference is not significant")
+    print(paste0("alpha = ", alpha_t, ", p-value = ",  visits_res$p.value))}
+  
+  
+  print("T-test for duration of visits:")
+  print(duration_res)
+  
 
-#histograms for 2 new columns
-# -- duration
-p1 <- ggplot(t_test_table, aes(duration_diff)) +
-  geom_histogram(fill = "white", color = "grey30") +
-  facet_wrap(~ strain.)
-# -- number of visits
-p2 <- ggplot(t_test_table, aes(visits_diff)) +
-  geom_histogram(fill = "white", color = "grey30") +
-  facet_wrap(~ strain.) 
-
-grid.arrange(p1, p2, nrow = 2)
-
-#t-tests for duration and visits
-visits_res <- t.test(visits_diff ~ strain., t_test_table)
-duration_res <- t.test(duration_diff ~ strain., t_test_table)
-
-visits_res
+  if(duration_res$p.value<alpha_t) {
+    print("Duration of visits: Difference is significant")
+    print(paste0("alpha = ", alpha_t, ", p-value = ",  duration_res$p.value))
+  } else {
+    print("Duration of visits: Difference is not significant")
+    print(paste0("alpha = ", alpha_t, ", p-value = ",  duration_res$p.value))
+  }
+}
 
